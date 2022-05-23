@@ -1,27 +1,36 @@
 pragma solidity >=0.8.0 <0.9.0;
 //SPDX-License-Identifier: MIT
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "hardhat/console.sol";
-// import "@openzeppelin/contracts/access/Ownable.sol"; 
-// https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
-
-contract PurposeHandler {
+contract PurposeHandler is Ownable{
 
   event SetPurpose(address sender, string purpose);
 
-  string public purpose = "Building Unstoppable Apps!!!";
+  string public purpose = "Building Unstoppable Apps";
+  uint256 public price = 0.001 ether;
+  // 这里填写你自己的地址
 
-  constructor() payable {
-    // what should we do on deploy?
+  constructor() {
   }
 
-  function setPurpose(string memory newPurpose) public {
+  function setPurpose(string memory newPurpose) payable public{
+      // about msg.sender:
+      // https://cryptozombies.io/en/lesson/2/chapter/3
+      // about require:
+      // https://cryptozombies.io/en/lesson/2/chapter/4
+      require(msg.value > price, "NOT ENGOUGH!");
       purpose = newPurpose;
-      console.log(msg.sender,"set purpose to",purpose);
+      // update the price when set it.
+      price = msg.value;
       emit SetPurpose(msg.sender, purpose);
   }
 
-  // to support receiving ETH by default
-  receive() external payable {}
-  fallback() external payable {}
+  function getBalance() view public returns(uint256) {
+    return address(this).balance;
+  }
+
+  function getMyMoney(address _to, uint256 amount) public onlyOwner{
+      address payable receiver = payable(_to);
+      receiver.transfer(amount);
+  }
 }
